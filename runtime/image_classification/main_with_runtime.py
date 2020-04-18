@@ -21,6 +21,7 @@ import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
+from torch.utils.data import SubsetRandomSampler
 
 sys.path.append("..")
 import runtime
@@ -174,6 +175,9 @@ def main():
             int(k): v for (k, v) in configuration_maps['stage_to_rank_map'].items()}
         configuration_maps['stage_to_depth_map'] = json_config_file.get("stage_to_depth_map", None)
 
+    print("###", training_tensor_shapes)
+
+
     r = runtime.StageRuntime(
         model=model, distributed_backend=args.distributed_backend,
         fp16=args.fp16, loss_scale=args.loss_scale,
@@ -270,18 +274,31 @@ def main():
     ]))
 
     distributed_sampler = False
-    train_sampler = None
-    val_sampler = None
-    if configuration_maps['stage_to_rank_map'] is not None:
-        num_ranks_in_first_stage = len(configuration_maps['stage_to_rank_map'][0])
-        if num_ranks_in_first_stage > 1:
-            train_sampler = torch.utils.data.distributed.DistributedSampler(
-                train_dataset, num_replicas=num_ranks_in_first_stage,
-                rank=args.rank)
-            val_sampler = torch.utils.data.distributed.DistributedSampler(
-                val_dataset, num_replicas=num_ranks_in_first_stage,
-                rank=args.rank)
-            distributed_sampler = True
+    # train_sampler = None
+    # val_sampler = None
+    # if configuration_maps['stage_to_rank_map'] is not None:
+    #     num_ranks_in_first_stage = len(configuration_maps['stage_to_rank_map'][0])
+    #     if num_ranks_in_first_stage > 1:
+    #         train_sampler = torch.utils.data.distributed.DistributedSampler(
+    #             train_dataset, num_replicas=num_ranks_in_first_stage,
+    #             rank=args.rank)
+    #         val_sampler = torch.utils.data.distributed.DistributedSampler(
+    #             val_dataset, num_replicas=num_ranks_in_first_stage,
+    #             rank=args.rank)
+    #         distributed_sampler = True
+    #
+    # train_loader = torch.utils.data.DataLoader(
+    #     train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
+    #     num_workers=args.workers, pin_memory=True, sampler=train_sampler, drop_last=True)
+    #
+    # val_loader = torch.utils.data.DataLoader(
+    #     val_dataset, batch_size=args.eval_batch_size, shuffle=False,
+    #     num_workers=args.workers, pin_memory=True, sampler=val_sampler, drop_last=True)
+
+    test_indices = list(range(128))
+
+    train_sampler = SubsetRandomSampler(test_indices)
+    val_sampler = SubsetRandomSampler(test_indices)
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
