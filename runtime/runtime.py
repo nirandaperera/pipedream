@@ -110,6 +110,10 @@ class StageRuntime:
         stage_to_rank_map = configuration_maps['stage_to_rank_map']
         stage_to_depth_map = configuration_maps['stage_to_depth_map']
 
+        print("$$mod to stage", module_to_stage_map)
+        print("$$stage to rank", stage_to_rank_map)
+        print("$$stage to depth", stage_to_depth_map)
+
         if module_to_stage_map is None:
             # If IP addresses not specified, resort to all layers on
             # single machine.
@@ -133,10 +137,13 @@ class StageRuntime:
             for module in range(len(module_to_stage_map)):
                 stage_to_module_map[module_to_stage_map[module]].append(module)
 
+            print("$$stage to mod", stage_to_module_map)
+
             rank_to_stage_map = {}
             for stage in stage_to_rank_map:
                 for rank in stage_to_rank_map[stage]:
                     rank_to_stage_map[rank] = stage
+            print("$$rank to stage", rank_to_stage_map)
 
             # Now, use this mapping to determine the modules contained in
             # each stage.
@@ -172,7 +179,7 @@ class StageRuntime:
                     self.num_warmup_minibatches -= len(
                         stage_to_rank_map[i])
                 self.num_warmup_minibatches = self.num_warmup_minibatches // \
-                    self.num_ranks_in_stage
+                                              self.num_ranks_in_stage
 
             # To determine where tensors should be sent and received, first
             # determine the "producing" and "consuming" module IDs of each
@@ -190,11 +197,11 @@ class StageRuntime:
                 backend=self.distributed_backend)
 
             for i in range(len(model)):
-                for j in range(i+1, len(model)):
+                for j in range(i + 1, len(model)):
                     for tensor_name in model[i][2]:
                         if tensor_name in model[j][1]:
                             if module_to_stage_map[i] == \
-                                module_to_stage_map[j]:
+                                    module_to_stage_map[j]:
                                 continue
                             # For now, assume that each stage is served by only
                             # a single machine.
@@ -220,6 +227,9 @@ class StageRuntime:
                     if model_inputs not in self.tensor_tags:
                         self.tensor_tags[model_inputs] = tensor_tag
                         tensor_tag += 1
+
+        print('$$modules with dep', self.modules_with_dependencies.all_input_names(),
+              self.modules_with_dependencies.all_output_names())
 
         modules = self.modules_with_dependencies.modules()
         for i in range(len(modules)):
@@ -249,8 +259,8 @@ class StageRuntime:
         num_parameters = 0
         for i in range(len(modules)):
             if group is not None:
-                if ((i < (len(modules)-1) and self.is_criterion)
-                    or not self.is_criterion):
+                if ((i < (len(modules) - 1) and self.is_criterion)
+                        or not self.is_criterion):
                     num_parameters += \
                         sum(x.size()[0] * x.size()[1]
                             if len(x.size()) > 1 else x.size()[0]
@@ -317,7 +327,7 @@ class StageRuntime:
         if self.fp16:
             saved_master_parameters = state_dict["master_parameters"]
             for master_parameter, saved_master_parameter in zip(
-                self.master_parameters, saved_master_parameters):
+                    self.master_parameters, saved_master_parameters):
                 master_parameter.data.copy_(saved_master_parameter.data)
 
     def cuda(self):
@@ -448,19 +458,19 @@ class StageRuntime:
         # Receive all required gradients from downstream
         # machines.
         for output_name in self.send_ranks:
-             if output_name in self.target_tensor_names:
+            if output_name in self.target_tensor_names:
                 continue
 
-             self.gradients[output_name] = \
+            self.gradients[output_name] = \
                 self.comm_handler.recv(
                     output_name,
                     forward_minibatch_id=self.forward_minibatch_id,
                     backward_minibatch_id=self.backward_minibatch_id,
                     backward=True)
 
-             self.backward_stats.stats['receive_tensors_size'] += \
-                 (self.gradients[output_name].element_size() *
-                  self.gradients[output_name].nelement())
+            self.backward_stats.stats['receive_tensors_size'] += \
+                (self.gradients[output_name].element_size() *
+                 self.gradients[output_name].nelement())
 
     def send_tensors_backward(self):
         # Send all required gradients upstream.
@@ -575,7 +585,7 @@ class StageRuntime:
         # Similarly, only set inputs for tensors that are not outputs of other
         # modules in this stage.
         for (module, input_names, output_names) in \
-            zip(reversed(modules), reversed(all_input_names), reversed(all_output_names)):
+                zip(reversed(modules), reversed(all_input_names), reversed(all_output_names)):
             for output_name in output_names:
                 if output_name not in all_input_names_set:
                     if output_name not in self.gradients:
@@ -592,6 +602,7 @@ class StageRuntime:
         def hook_wrapper(input_name):
             def hook(input_gradient):
                 input_gradients[input_name] = input_gradient
+
             return hook
 
         for input_name in inputs:
@@ -632,7 +643,7 @@ class StageRuntime:
             return
 
         # Receive ack from next stage. Send ack to previous stage.
-        if self.stage < (self.num_stages-1):
+        if self.stage < (self.num_stages - 1):
             self.comm_handler.recv(
                 "ack",
                 forward_minibatch_id=self.forward_minibatch_id,
