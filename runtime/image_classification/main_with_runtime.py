@@ -295,7 +295,7 @@ def main():
     #     val_dataset, batch_size=args.eval_batch_size, shuffle=False,
     #     num_workers=args.workers, pin_memory=True, sampler=val_sampler, drop_last=True)
 
-    test_indices = list(range(128))
+    test_indices = list(range(256))
 
     train_sampler = SubsetRandomSampler(test_indices)
     val_sampler = SubsetRandomSampler(test_indices)
