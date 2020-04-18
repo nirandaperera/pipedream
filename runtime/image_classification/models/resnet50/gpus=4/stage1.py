@@ -51,7 +51,7 @@ class Stage1(torch.nn.Module):
         self.layer48 = torch.nn.ReLU(inplace=True)
         self.layer49 = torch.nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
         self.layer50 = torch.nn.BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        self.layer51 = torch.nn.ReLU(inplace=True)
+        self.layer51 = torch.nn.ReLU(inplace=False)
         self.layer52 = torch.nn.Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
         self._initialize_weights()
 
