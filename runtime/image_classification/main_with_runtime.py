@@ -106,7 +106,7 @@ def is_last_stage():
 
 # Synthetic Dataset class.
 class SyntheticDataset(torch.utils.data.dataset.Dataset):
-    def __init__(self, input_size, length, num_classes=200):
+    def __init__(self, input_size, length, num_classes=1000):
         self.tensor = Variable(torch.rand(*input_size)).type(torch.FloatTensor)
         self.target = torch.Tensor(1).random_(0, num_classes)[0].type(torch.LongTensor)
         self.length = length
@@ -135,7 +135,7 @@ def main():
     if args.arch == 'inception_v3':
         input_size = [args.batch_size, 3, 299, 299]
     else:
-        input_size = [args.batch_size, 3, 64, 64]
+        input_size = [args.batch_size, 3, 224, 224]
     training_tensor_shapes = {"input0": input_size, "target": [args.batch_size]}
     dtypes = {"input0": torch.int64, "target": torch.int64}
     inputs_module_destinations = {"input": 0}
@@ -247,28 +247,28 @@ def main():
         train_dataset = datasets.ImageFolder(
             traindir,
             transforms.Compose([
-                transforms.RandomResizedCrop(64),
+                transforms.RandomResizedCrop(299),
                 transforms.ToTensor(),
                 normalize,
             ])
         )
         if args.synthetic_data:
-            train_dataset = SyntheticDataset((3, 64, 64), len(train_dataset))
+            train_dataset = SyntheticDataset((3, 299, 299), len(train_dataset))
     else:
         train_dataset = datasets.ImageFolder(
             traindir,
             transforms.Compose([
-                transforms.RandomResizedCrop(64),
+                transforms.RandomResizedCrop(224),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 normalize,
             ]))
         if args.synthetic_data:
-            train_dataset = SyntheticDataset((3, 64, 64), len(train_dataset))
+            train_dataset = SyntheticDataset((3, 224, 224), len(train_dataset))
 
     val_dataset = datasets.ImageFolder(valdir, transforms.Compose([
-        transforms.Resize(64),
-        transforms.CenterCrop(64),
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
         transforms.ToTensor(),
         normalize,
     ]))
@@ -295,7 +295,7 @@ def main():
     #     val_dataset, batch_size=args.eval_batch_size, shuffle=False,
     #     num_workers=args.workers, pin_memory=True, sampler=val_sampler, drop_last=True)
 
-    test_indices = list(range(256))
+    test_indices = list(range(128))
 
     train_sampler = SubsetRandomSampler(test_indices)
     val_sampler = SubsetRandomSampler(test_indices)

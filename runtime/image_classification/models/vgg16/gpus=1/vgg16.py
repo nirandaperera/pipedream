@@ -38,13 +38,13 @@ class VGG16Partitioned(torch.nn.Module):
         self.layer30 = torch.nn.Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.layer31 = torch.nn.ReLU(inplace=True)
         self.layer32 = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
-        self.layer35 = torch.nn.Linear(in_features=2048, out_features=1024, bias=True)
+        self.layer35 = torch.nn.Linear(in_features=25088, out_features=4096, bias=True)
         self.layer36 = torch.nn.ReLU(inplace=True)
         self.layer37 = torch.nn.Dropout(p=0.5)
-        self.layer38 = torch.nn.Linear(in_features=1024, out_features=1024, bias=True)
+        self.layer38 = torch.nn.Linear(in_features=4096, out_features=4096, bias=True)
         self.layer39 = torch.nn.ReLU(inplace=True)
         self.layer40 = torch.nn.Dropout(p=0.5)
-        self.layer41 = torch.nn.Linear(in_features=1024, out_features=200, bias=True)
+        self.layer41 = torch.nn.Linear(in_features=4096, out_features=1000, bias=True)
 
         self._initialize_weights()
 
