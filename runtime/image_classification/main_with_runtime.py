@@ -123,6 +123,8 @@ def main():
 
     torch.cuda.set_device(args.local_rank)
 
+    torch.autograd.set_detect_anomaly(True)
+
     # define loss function (criterion)
     criterion = nn.CrossEntropyLoss()
 
