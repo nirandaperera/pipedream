@@ -500,7 +500,7 @@ class StageRuntime:
     def run_forward(self, recompute_step=False):
         """Run forward pass.
         """
-        print(f"tensors {self.tensors}")
+        print(f"starting fwd\n")
 
 
         # Receive tensors from previous worker.
@@ -516,6 +516,9 @@ class StageRuntime:
             self.forward_stats.print_stats()
         self.forward_stats.reset_stats()
         self.forward_minibatch_id += 1
+
+        print(f"ending fwd\n")
+
 
     def _run_forward(self, tensors):
         # Perform forward pass through model (self.modules_with_dependencies already
