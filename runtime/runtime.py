@@ -433,6 +433,8 @@ class StageRuntime:
                     (self.tensors[-1][input_name].element_size() *
                      self.tensors[-1][input_name].nelement())
 
+                print(f"\n%% received tensor {input_name} fwd id {self.forward_minibatch_id} back id {self.backward_minibatch_id}")
+
             # Used to track where to receive forward from.
             self.comm_handler.increment_messaging_index(
                 sending=False)
@@ -498,6 +500,9 @@ class StageRuntime:
     def run_forward(self, recompute_step=False):
         """Run forward pass.
         """
+        print(f"tensors {self.tensors}")
+
+
         # Receive tensors from previous worker.
         self.receive_tensors_forward()
         tensors = self.tensors[-1]
