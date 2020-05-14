@@ -371,14 +371,19 @@ def train(train_loader, r, optimizer, epoch):
     print(f"total microbatch count: {n} minibatch size: {args.batch_size} microbatch size: {args.micro_batch_size}")
     if args.num_minibatches is not None:
         n = min(n, args.num_minibatches)
-    r.train(n)
-    if not is_first_stage(): train_loader = None
+
+    # at each run, it will always be batch_size/micro_batch_size number of comp elems
+    r.train(micro_batches_per_mini_batch)
+
+    if not is_first_stage():
+        train_loader = None
     r.set_loader(train_loader)
 
     end = time.time()
     epoch_start_time = time.time()
 
-    if args.no_input_pipelining:
+    # here, using num_warmup_minibatches instead of num_warmup_microbatches
+    if args.no_input_pipelining:  # if not pipeline
         num_warmup_minibatches = 0
     else:
         num_warmup_minibatches = r.num_warmup_minibatches
@@ -387,75 +392,78 @@ def train(train_loader, r, optimizer, epoch):
         print("Letting in %d warm-up minibatches" % num_warmup_minibatches)
         print("Running training for %d minibatches" % n)
 
-    # start num_warmup_minibatches forward passes
-    for i in range(num_warmup_minibatches):
-        r.run_forward()
+    # from here, need to start the minibatch loop
 
-    for i in range(n - num_warmup_minibatches):
-        # perform forward pass
-        r.run_forward()
+    for j in range(micro_batches_per_mini_batch):
+        # start num_warmup_minibatches forward passes
+        for i in range(num_warmup_minibatches):
+            r.run_forward()
 
-        # Adjust learning rate
-        adjust_learning_rate(optimizer, epoch, args.epochs, r, args.lr_policy, i, n)
+        for i in range(n - num_warmup_minibatches):
+            # perform forward pass
+            r.run_forward()
 
-        if is_last_stage():
-            # measure accuracy and record loss
-            output, target, loss = r.output, r.target, r.loss
-            prec1, prec5 = accuracy(output, target, topk=(1, 5))
-            losses.update(loss.item(), output.size(0))
-            top1.update(prec1[0], output.size(0))
-            top5.update(prec5[0], output.size(0))
+            # Adjust learning rate
+            adjust_learning_rate(optimizer, epoch, args.epochs, r, args.lr_policy, i, n)
 
-            # measure elapsed time
-            batch_time.update(time.time() - end)
-            end = time.time()
-            epoch_time = (end - epoch_start_time) / 3600.0
-            full_epoch_time = (epoch_time / float(i + 1)) * float(n)
+            if is_last_stage():
+                # measure accuracy and record loss
+                output, target, loss = r.output, r.target, r.loss
+                prec1, prec5 = accuracy(output, target, topk=(1, 5))
+                losses.update(loss.item(), output.size(0))
+                top1.update(prec1[0], output.size(0))
+                top5.update(prec5[0], output.size(0))
 
-            if i % args.print_freq == 0:
-                print('Epoch: [{0}][{1}/{2}]\t'
-                      'Time: {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Epoch time [hr]: {epoch_time:.3f} ({full_epoch_time:.3f})\t'
-                      'Memory: {memory:.3f} ({cached_memory:.3f})\t'
-                      'Loss: {loss.val:.4f} ({loss.avg:.4f})\t'
-                      'Prec@1: {top1.val:.3f} ({top1.avg:.3f})\t'
-                      'Prec@5: {top5.val:.3f} ({top5.avg:.3f})'.format(
-                    epoch, i, n, batch_time=batch_time,
-                    epoch_time=epoch_time, full_epoch_time=full_epoch_time,
-                    loss=losses, top1=top1, top5=top5,
-                    memory=(float(torch.cuda.memory_allocated()) / 10 ** 9),
-                    cached_memory=(float(torch.cuda.memory_cached()) / 10 ** 9)))
-                import sys
-                sys.stdout.flush()
-        else:
-            if i % args.print_freq == 0:
-                print('Epoch: [{0}][{1}/{2}]\tMemory: {memory:.3f} ({cached_memory:.3f})'.format(
-                    epoch, i, n, memory=(float(torch.cuda.memory_allocated()) / 10 ** 9),
-                    cached_memory=(float(torch.cuda.memory_cached()) / 10 ** 9)))
-                import sys
-                sys.stdout.flush()
+                # measure elapsed time
+                batch_time.update(time.time() - end)
+                end = time.time()
+                epoch_time = (end - epoch_start_time) / 3600.0
+                full_epoch_time = (epoch_time / float(i + 1)) * float(n)
 
-        # perform backward pass
-        if args.fp16:
-            r.zero_grad()
-        else:
-            pass
+                if i % args.print_freq == 0:
+                    print('Epoch: [{0}][{1}/{2}]\t'
+                          'Time: {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                          'Epoch time [hr]: {epoch_time:.3f} ({full_epoch_time:.3f})\t'
+                          'Memory: {memory:.3f} ({cached_memory:.3f})\t'
+                          'Loss: {loss.val:.4f} ({loss.avg:.4f})\t'
+                          'Prec@1: {top1.val:.3f} ({top1.avg:.3f})\t'
+                          'Prec@5: {top5.val:.3f} ({top5.avg:.3f})'.format(
+                        epoch, i, n, batch_time=batch_time,
+                        epoch_time=epoch_time, full_epoch_time=full_epoch_time,
+                        loss=losses, top1=top1, top5=top5,
+                        memory=(float(torch.cuda.memory_allocated()) / 10 ** 9),
+                        cached_memory=(float(torch.cuda.memory_cached()) / 10 ** 9)))
+                    import sys
+                    sys.stdout.flush()
+            else:
+                if i % args.print_freq == 0:
+                    print('Epoch: [{0}][{1}/{2}]\tMemory: {memory:.3f} ({cached_memory:.3f})'.format(
+                        epoch, i, n, memory=(float(torch.cuda.memory_allocated()) / 10 ** 9),
+                        cached_memory=(float(torch.cuda.memory_cached()) / 10 ** 9)))
+                    import sys
+                    sys.stdout.flush()
+
+            # perform backward pass
+            if args.fp16:
+                r.zero_grad()
+            else:
+                pass
+                # optimizer.zero_grad()
+            # optimizer.load_old_params()
+            r.run_backward()
+            # optimizer.load_new_params()
+            # optimizer.step()
+
+        # finish remaining backward passes
+        for i in range(num_warmup_minibatches):
             # optimizer.zero_grad()
-        # optimizer.load_old_params()
-        r.run_backward()
-        # optimizer.load_new_params()
-        # optimizer.step()
+            # optimizer.load_old_params()
+            r.run_backward()
+            # optimizer.load_new_params()
+            # optimizer.step()
 
-    # finish remaining backward passes
-    for i in range(num_warmup_minibatches):
-        # optimizer.zero_grad()
-        # optimizer.load_old_params()
-        r.run_backward()
-        # optimizer.load_new_params()
-        # optimizer.step()
-
-    # wait for all helper threads to complete
-    r.wait()
+        # wait for all helper threads to complete
+        r.wait()
 
     print("Epoch %d: %.3f seconds" % (epoch, time.time() - epoch_start_time))
     print("Epoch start time: %.3f, epoch end time: %.3f" % (epoch_start_time, time.time()))

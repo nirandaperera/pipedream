@@ -342,7 +342,7 @@ def main():
                     'optimizer' : optimizer.state_dict(),
                 }, args.checkpoint_dir, r.stage)
 
-
+# test comment
 def train(train_loader, r, optimizer, epoch):
     batch_time = AverageMeter()
     losses = AverageMeter()

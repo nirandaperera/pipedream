@@ -109,6 +109,7 @@ class CommunicationHandler(object):
 
         self.setup_queues()
         self.setup_messaging_schedule()
+        print("messaging schedule: ", self.messaging_schedule, "\n\n")
         self.create_process_groups()
 
     def setup_queues(self):
