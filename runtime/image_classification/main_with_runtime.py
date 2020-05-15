@@ -306,22 +306,22 @@ def main():
         else:
             train(train_loader, r, optimizer, epoch)
 
-            # evaluate on validation set
-            prec1 = validate(val_loader, r, epoch)
-            if r.stage != r.num_stages: prec1 = 0
-
-            # remember best prec@1 and save checkpoint
-            best_prec1 = max(prec1, best_prec1)
-
-            should_save_checkpoint = args.checkpoint_dir_not_nfs or r.rank_in_stage == 0
-            if args.checkpoint_dir and should_save_checkpoint:
-                save_checkpoint({
-                    'epoch': epoch + 1,
-                    'arch': args.arch,
-                    'state_dict': r.state_dict(),
-                    'best_prec1': best_prec1,
-                    'optimizer' : optimizer.state_dict(),
-                }, args.checkpoint_dir, r.stage)
+            # # evaluate on validation set
+            # prec1 = validate(val_loader, r, epoch)
+            # if r.stage != r.num_stages: prec1 = 0
+            #
+            # # remember best prec@1 and save checkpoint
+            # best_prec1 = max(prec1, best_prec1)
+            #
+            # should_save_checkpoint = args.checkpoint_dir_not_nfs or r.rank_in_stage == 0
+            # if args.checkpoint_dir and should_save_checkpoint:
+            #     save_checkpoint({
+            #         'epoch': epoch + 1,
+            #         'arch': args.arch,
+            #         'state_dict': r.state_dict(),
+            #         'best_prec1': best_prec1,
+            #         'optimizer' : optimizer.state_dict(),
+            #     }, args.checkpoint_dir, r.stage)
 
 
 def train(train_loader, r, optimizer, epoch):
