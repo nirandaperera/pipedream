@@ -216,6 +216,11 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
     end = time.time()
     epoch_start_time = time.time()
+
+    fwd_times = {}
+    loss_times = {}
+    bck_times = {}
+
     for i, (input, target) in enumerate(train_loader):
         if args.num_minibatches is not None and i >= args.num_minibatches:
             break
@@ -226,11 +231,17 @@ def train(train_loader, model, criterion, optimizer, epoch):
         target = target.cuda(non_blocking=True)
 
         # compute output
+        ts = time.time()
         output = model(input)
+        fwd_times[i] = (ts, time.time())
         if isinstance(output, tuple):
+            ts = time.time()
             loss = sum((criterion(output_elem, target) for output_elem in output))
+            loss_times[i] = (ts, time.time())
         else:
+            ts = time.time()
             loss = criterion(output, target)
+            loss_times[i] = (ts, time.time())
 
         # measure accuracy and record loss
         if isinstance(output, tuple):
@@ -244,7 +255,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # compute gradient and do SGD step
         optimizer.zero_grad()
         with amp_handle.scale_loss(loss, optimizer) as scaled_loss:
+            ts = time.time()
             scaled_loss.backward()
+            bck_times[i] = (ts, time.time())
         optimizer.step()
 
         # measure elapsed time
@@ -270,6 +283,10 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
     print("Epoch %d: %.3f seconds" % (epoch, time.time() - epoch_start_time))
     print("Epoch start time: %.3f, epoch end time: %.3f" % (epoch_start_time, time.time()))
+
+    print("### fwd times: \n", fwd_times)
+    print("### loss times: \n", loss_times)
+    print("### back times: \n", bck_times)
 
 
 def validate(val_loader, model, criterion, epoch):
