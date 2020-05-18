@@ -188,20 +188,20 @@ def main():
         else:
             train(train_loader, model, criterion, optimizer, epoch)
 
-            # evaluate on validation set
-            prec1 = validate(val_loader, model, criterion, epoch)
-
-            # remember best prec@1 and save checkpoint
-            is_best = prec1 > best_prec1
-            best_prec1 = max(prec1, best_prec1)
-            checkpoint_dict = {
-                'epoch': epoch + 1,
-                'arch': args.arch,
-                'state_dict': model.state_dict(),
-                'best_prec1': best_prec1,
-                'optimizer' : optimizer.state_dict(),
-            }
-            save_checkpoint(checkpoint_dict, is_best)
+            # # evaluate on validation set
+            # prec1 = validate(val_loader, model, criterion, epoch)
+            #
+            # # remember best prec@1 and save checkpoint
+            # is_best = prec1 > best_prec1
+            # best_prec1 = max(prec1, best_prec1)
+            # checkpoint_dict = {
+            #     'epoch': epoch + 1,
+            #     'arch': args.arch,
+            #     'state_dict': model.state_dict(),
+            #     'best_prec1': best_prec1,
+            #     'optimizer' : optimizer.state_dict(),
+            # }
+            # save_checkpoint(checkpoint_dict, is_best)
 
 
 def train(train_loader, model, criterion, optimizer, epoch):
