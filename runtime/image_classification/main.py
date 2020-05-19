@@ -217,9 +217,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
     end = time.time()
     epoch_start_time = time.time()
 
-    fwd_times = {}
-    loss_times = {}
-    bck_times = {}
+    fwd_time = AverageMeter()
+    loss_time = AverageMeter()
+    bck_time = AverageMeter()
 
     for i, (input, target) in enumerate(train_loader):
         if args.num_minibatches is not None and i >= args.num_minibatches:
@@ -233,15 +233,15 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # compute output
         ts = time.time()
         output = model(input)
-        fwd_times[i] = (ts, time.time())
+        fwd_time.update(time.time() - ts)
         if isinstance(output, tuple):
             ts = time.time()
             loss = sum((criterion(output_elem, target) for output_elem in output))
-            loss_times[i] = (ts, time.time())
+            loss_time.update(time.time() - ts)
         else:
             ts = time.time()
             loss = criterion(output, target)
-            loss_times[i] = (ts, time.time())
+            loss_time.update(time.time() - ts)
 
         # measure accuracy and record loss
         if isinstance(output, tuple):
@@ -257,7 +257,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         with amp_handle.scale_loss(loss, optimizer) as scaled_loss:
             ts = time.time()
             scaled_loss.backward()
-            bck_times[i] = (ts, time.time())
+            bck_time.update(time.time() - ts)
         optimizer.step()
 
         # measure elapsed time
@@ -274,19 +274,20 @@ def train(train_loader, model, criterion, optimizer, epoch):
                   'Memory: {memory:.3f} ({cached_memory:.3f})\t'
                   'Loss: {loss.val:.4f} ({loss.avg:.4f})\t'
                   'Prec@1: {top1.val:.3f} ({top1.avg:.3f})\t'
-                  'Prec@5: {top5.val:.3f} ({top5.avg:.3f})'.format(
-                   epoch, i, n, batch_time=batch_time,
-                   data_time=data_time, loss=losses, top1=top1, top5=top5,
-                   memory=(float(torch.cuda.memory_allocated()) / 10**9),
-                   cached_memory=(float(torch.cuda.memory_cached()) / 10**9)))
-            import sys; sys.stdout.flush()
+                  'Prec@5: {top5.val:.3f} ({top5.avg:.3f})\t'
+                  'fwd: {fwd_time.val:.3f} ({fwd_time.avg:.3f})\t'
+                  'loss: {loss_time.val:.3f} ({loss_time.avg:.3f})\t'
+                  'bck: {bck_time.val:.3f} ({bck_time.avg:.3f})\t'.format(
+                    epoch, i, n, batch_time=batch_time,
+                    data_time=data_time, loss=losses, top1=top1, top5=top5,
+                    memory=(float(torch.cuda.memory_allocated()) / 10 ** 9),
+                    cached_memory=(float(torch.cuda.memory_cached()) / 10 ** 9),
+                    fwd_time=fwd_time, loss_time=loss_time, bck_time=bck_time))
+            import sys
+            sys.stdout.flush()
 
     print("Epoch %d: %.3f seconds" % (epoch, time.time() - epoch_start_time))
     print("Epoch start time: %.3f, epoch end time: %.3f" % (epoch_start_time, time.time()))
-
-    print("### fwd times: \n", fwd_times)
-    print("### loss times: \n", loss_times)
-    print("### back times: \n", bck_times)
 
 
 def validate(val_loader, model, criterion, epoch):
@@ -330,11 +331,12 @@ def validate(val_loader, model, criterion, epoch):
                       'Loss: {loss.val:.4f} ({loss.avg:.4f})\t'
                       'Prec@1: {top1.val:.3f} ({top1.avg:.3f})\t'
                       'Prec@5: {top5.val:.3f} ({top5.avg:.3f})'.format(
-                       epoch, i, n, batch_time=batch_time, loss=losses,
-                       top1=top1, top5=top5,
-                       memory=(float(torch.cuda.memory_allocated()) / 10**9),
-                       cached_memory=(float(torch.cuda.memory_cached()) / 10**9)))
-                import sys; sys.stdout.flush()
+                    epoch, i, n, batch_time=batch_time, loss=losses,
+                    top1=top1, top5=top5,
+                    memory=(float(torch.cuda.memory_allocated()) / 10 ** 9),
+                    cached_memory=(float(torch.cuda.memory_cached()) / 10 ** 9)))
+                import sys;
+                sys.stdout.flush()
 
         print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
               .format(top1=top1, top5=top5))
@@ -352,6 +354,7 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
+
     def __init__(self):
         self.reset()
 
