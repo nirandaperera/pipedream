@@ -503,9 +503,9 @@ class StageRuntime:
 
         if self.verbose_freq > 0 and self.forward_minibatch_id % self.verbose_freq == 0:
             self.forward_stats.print_stats()
-            print(f"### fwd_rcvd r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts1}")
-            print(f"### fwd_comp r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts2 - ts1}")
-            print(f"### fwd_snd_q r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts3}")
+            print(f"### fwd_rcvd r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts1:.3f}")
+            print(f"### fwd_comp r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts2 - ts1:.3f}")
+            print(f"### fwd_snd_q r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts3:.3f}")
 
         self.forward_stats.reset_stats()
         self.forward_minibatch_id += 1
@@ -634,9 +634,9 @@ class StageRuntime:
 
         if self.verbose_freq > 0 and self.backward_minibatch_id % self.verbose_freq == 0:
             self.backward_stats.print_stats()
-            print(f"### bwd_rcvd r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts1}")
-            print(f"### bwd_comp r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts2 - ts1}")
-            print(f"### bwd_snd_q r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts3}")
+            print(f"### bwd_rcvd r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts1:.3f}")
+            print(f"### bwd_comp r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts2 - ts1:.3f}")
+            print(f"### bwd_snd_q r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts3:.3f}")
 
         self.backward_stats.reset_stats()
         self.backward_minibatch_id += 1

@@ -678,7 +678,7 @@ def _recv(tensor_name, src_rank, tensor_shape=None, dtype=torch.float32,
                   src=src_rank,
                   tag=tag)
         tensor = tensor.cuda()
-        print(f"rcv:{tensor_name} from:{src_rank} tag:{tag} ts:{time.time()}")
+        # print(f"rcv:{tensor_name} from:{src_rank} tag:{tag} ts:{time.time()}")
 
     assert tensor.is_cuda
     return tensor
@@ -704,7 +704,7 @@ def _send(tensor, tensor_name, src_rank, dst_rank, tag, sub_process_group=None):
                        src=src_rank,
                        group=sub_process_group)
     else:
-        print(f"send:{tensor_name} from:{src_rank} to:{dst_rank} tag:{tag} ts:{time.time()}")
+        # print(f"send:{tensor_name} from:{src_rank} to:{dst_rank} tag:{tag} ts:{time.time()}")
         assert tensor.is_cuda
         tensor = tensor.cpu()
 
