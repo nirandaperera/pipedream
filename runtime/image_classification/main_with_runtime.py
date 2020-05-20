@@ -100,8 +100,10 @@ best_prec1 = 0
 def is_first_stage():
     return args.stage is None or (args.stage == 0)
 
+
 def is_last_stage():
-    return args.stage is None or (args.stage == (args.num_stages-1))
+    return args.stage is None or (args.stage == (args.num_stages - 1))
+
 
 # Synthetic Dataset class.
 class SyntheticDataset(torch.utils.data.dataset.Dataset):
@@ -115,6 +117,7 @@ class SyntheticDataset(torch.utils.data.dataset.Dataset):
 
     def __len__(self):
         return self.length
+
 
 def main():
     global args, best_prec1
@@ -217,7 +220,7 @@ def main():
         best_prec1 = checkpoint['best_prec1']
         r.load_state_dict(checkpoint['state_dict'])
         print("=> loaded checkpoint '{}' (epoch {})"
-                .format(checkpoint_file_path, checkpoint['epoch']))
+              .format(checkpoint_file_path, checkpoint['epoch']))
 
     optimizer = sgd.SGDWithWeightStashing(r.modules(), r.master_parameters,
                                           r.model_parameters, args.loss_scale,
@@ -294,7 +297,7 @@ def main():
     # if checkpoint is loaded, start by running validation
     if args.resume:
         assert args.start_epoch > 0
-        validate(val_loader, r, args.start_epoch-1)
+        validate(val_loader, r, args.start_epoch - 1)
 
     for epoch in range(args.start_epoch, args.epochs):
         if distributed_sampler:
@@ -347,16 +350,17 @@ def train(train_loader, r, optimizer, epoch):
         num_warmup_minibatches = r.num_warmup_minibatches
 
     if args.verbose_frequency > 0:
+        print(f"### num iterations: {n}")
         print("Letting in %d warm-up minibatches" % num_warmup_minibatches)
         print("Running training for %d minibatches" % n)
 
     # start num_warmup_minibatches forward passes
     for i in range(num_warmup_minibatches):
-        r.run_forward()
+        r.run_forward(epoch, n)
 
     for i in range(n - num_warmup_minibatches):
         # perform forward pass
-        r.run_forward()
+        r.run_forward(epoch, n)
 
         # Adjust learning rate
         adjust_learning_rate(optimizer, epoch, args.epochs, r, args.lr_policy, i, n)
@@ -373,7 +377,7 @@ def train(train_loader, r, optimizer, epoch):
             batch_time.update(time.time() - end)
             end = time.time()
             epoch_time = (end - epoch_start_time) / 3600.0
-            full_epoch_time = (epoch_time / float(i+1)) * float(n)
+            full_epoch_time = (epoch_time / float(i + 1)) * float(n)
 
             if i % args.print_freq == 0:
                 print('Epoch: [{0}][{1}/{2}]\t'
@@ -383,18 +387,20 @@ def train(train_loader, r, optimizer, epoch):
                       'Loss: {loss.val:.4f} ({loss.avg:.4f})\t'
                       'Prec@1: {top1.val:.3f} ({top1.avg:.3f})\t'
                       'Prec@5: {top5.val:.3f} ({top5.avg:.3f})'.format(
-                       epoch, i, n, batch_time=batch_time,
-                       epoch_time=epoch_time, full_epoch_time=full_epoch_time,
-                       loss=losses, top1=top1, top5=top5,
-                       memory=(float(torch.cuda.memory_allocated()) / 10**9),
-                       cached_memory=(float(torch.cuda.memory_cached()) / 10**9)))
-                import sys; sys.stdout.flush()
+                    epoch, i, n, batch_time=batch_time,
+                    epoch_time=epoch_time, full_epoch_time=full_epoch_time,
+                    loss=losses, top1=top1, top5=top5,
+                    memory=(float(torch.cuda.memory_allocated()) / 10 ** 9),
+                    cached_memory=(float(torch.cuda.memory_cached()) / 10 ** 9)))
+                import sys;
+                sys.stdout.flush()
         else:
             if i % args.print_freq == 0:
                 print('Epoch: [{0}][{1}/{2}]\tMemory: {memory:.3f} ({cached_memory:.3f})'.format(
-                       epoch, i, n, memory=(float(torch.cuda.memory_allocated()) / 10**9),
-                       cached_memory=(float(torch.cuda.memory_cached()) / 10**9)))
-                import sys; sys.stdout.flush()
+                    epoch, i, n, memory=(float(torch.cuda.memory_allocated()) / 10 ** 9),
+                    cached_memory=(float(torch.cuda.memory_cached()) / 10 ** 9)))
+                import sys;
+                sys.stdout.flush()
 
         # perform backward pass
         if args.fp16:
@@ -402,7 +408,7 @@ def train(train_loader, r, optimizer, epoch):
         else:
             optimizer.zero_grad()
         optimizer.load_old_params()
-        r.run_backward()
+        r.run_backward(epoch, n)
         optimizer.load_new_params()
         optimizer.step()
 
@@ -410,7 +416,7 @@ def train(train_loader, r, optimizer, epoch):
     for i in range(num_warmup_minibatches):
         optimizer.zero_grad()
         optimizer.load_old_params()
-        r.run_backward()
+        r.run_backward(epoch, n)
         optimizer.load_new_params()
         optimizer.step()
 
@@ -476,18 +482,19 @@ def validate(val_loader, r, epoch):
                           'Loss: {loss.val:.4f} ({loss.avg:.4f})\t'
                           'Prec@1: {top1.val:.3f} ({top1.avg:.3f})\t'
                           'Prec@5: {top5.val:.3f} ({top5.avg:.3f})'.format(
-                           epoch, i, n, batch_time=batch_time, loss=losses,
-                           top1=top1, top5=top5,
-                           memory=(float(torch.cuda.memory_allocated()) / 10**9),
-                           cached_memory=(float(torch.cuda.memory_cached()) / 10**9)))
-                    import sys; sys.stdout.flush()
+                        epoch, i, n, batch_time=batch_time, loss=losses,
+                        top1=top1, top5=top5,
+                        memory=(float(torch.cuda.memory_allocated()) / 10 ** 9),
+                        cached_memory=(float(torch.cuda.memory_cached()) / 10 ** 9)))
+                    import sys;
+                    sys.stdout.flush()
 
         if is_last_stage():
             print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
-              .format(top1=top1, top5=top5))
+                  .format(top1=top1, top5=top5))
 
         for i in range(num_warmup_minibatches):
-             r.run_ack()
+            r.run_ack()
 
         # wait for all helper threads to complete
         r.wait()
@@ -507,6 +514,7 @@ def save_checkpoint(state, checkpoint_dir, stage):
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
+
     def __init__(self):
         self.reset()
 
@@ -536,7 +544,7 @@ def adjust_learning_rate(optimizer, epoch, total_epochs, r, lr_policy, step, epo
     stage_base_lr = r.get_adjusted_learning_rate(base_lr=args.lr)
 
     if args.lr_warmup and epoch < 5:
-        lr = stage_base_lr * float(1 + step + epoch*epoch_length)/(5.*epoch_length)
+        lr = stage_base_lr * float(1 + step + epoch * epoch_length) / (5. * epoch_length)
 
     else:
         if lr_policy == "step":

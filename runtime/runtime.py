@@ -172,7 +172,7 @@ class StageRuntime:
                     self.num_warmup_minibatches -= len(
                         stage_to_rank_map[i])
                 self.num_warmup_minibatches = self.num_warmup_minibatches // \
-                    self.num_ranks_in_stage
+                                              self.num_ranks_in_stage
 
             # To determine where tensors should be sent and received, first
             # determine the "producing" and "consuming" module IDs of each
@@ -190,11 +190,11 @@ class StageRuntime:
                 backend=self.distributed_backend)
 
             for i in range(len(model)):
-                for j in range(i+1, len(model)):
+                for j in range(i + 1, len(model)):
                     for tensor_name in model[i][2]:
                         if tensor_name in model[j][1]:
                             if module_to_stage_map[i] == \
-                                module_to_stage_map[j]:
+                                    module_to_stage_map[j]:
                                 continue
                             # For now, assume that each stage is served by only
                             # a single machine.
@@ -249,8 +249,8 @@ class StageRuntime:
         num_parameters = 0
         for i in range(len(modules)):
             if group is not None:
-                if ((i < (len(modules)-1) and self.is_criterion)
-                    or not self.is_criterion):
+                if ((i < (len(modules) - 1) and self.is_criterion)
+                        or not self.is_criterion):
                     num_parameters += \
                         sum(x.size()[0] * x.size()[1]
                             if len(x.size()) > 1 else x.size()[0]
@@ -317,7 +317,7 @@ class StageRuntime:
         if self.fp16:
             saved_master_parameters = state_dict["master_parameters"]
             for master_parameter, saved_master_parameter in zip(
-                self.master_parameters, saved_master_parameters):
+                    self.master_parameters, saved_master_parameters):
                 master_parameter.data.copy_(saved_master_parameter.data)
 
     def cuda(self):
@@ -448,19 +448,19 @@ class StageRuntime:
         # Receive all required gradients from downstream
         # machines.
         for output_name in self.send_ranks:
-             if output_name in self.target_tensor_names:
+            if output_name in self.target_tensor_names:
                 continue
 
-             self.gradients[output_name] = \
+            self.gradients[output_name] = \
                 self.comm_handler.recv(
                     output_name,
                     forward_minibatch_id=self.forward_minibatch_id,
                     backward_minibatch_id=self.backward_minibatch_id,
                     backward=True)
 
-             self.backward_stats.stats['receive_tensors_size'] += \
-                 (self.gradients[output_name].element_size() *
-                  self.gradients[output_name].nelement())
+            self.backward_stats.stats['receive_tensors_size'] += \
+                (self.gradients[output_name].element_size() *
+                 self.gradients[output_name].nelement())
 
     def send_tensors_backward(self):
         # Send all required gradients upstream.
@@ -485,20 +485,28 @@ class StageRuntime:
             self.comm_handler.increment_messaging_index(
                 sending=True)
 
-    def run_forward(self, recompute_step=False):
+    def run_forward(self, epoch, num_batches, recompute_step=False):
         """Run forward pass.
         """
         # Receive tensors from previous worker.
         self.receive_tensors_forward()
         tensors = self.tensors[-1]
+        ts1 = time.time()
 
         # Run forward pass.
         self._run_forward(tensors)
+        ts2 = time.time()
 
         # Send tensors forward.
         self.send_tensors_forward()
+        ts3 = time.time()
+
         if self.verbose_freq > 0 and self.forward_minibatch_id % self.verbose_freq == 0:
             self.forward_stats.print_stats()
+            print(f"### fwd_rcvd r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts1}")
+            print(f"### fwd_comp r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts2 - ts1}")
+            print(f"### fwd_snd_q r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts3}")
+
         self.forward_stats.reset_stats()
         self.forward_minibatch_id += 1
 
@@ -545,9 +553,10 @@ class StageRuntime:
         else:
             self.loss = 1
 
-    def run_backward(self):
+    def run_backward(self, epoch, num_batches):
         # Receive input gradients needed for backward pass.
         self.receive_tensors_backward()
+        ts1 = time.time()
         # Backward pass through modules in reverse order.
         inputs = {}
         outputs = {}
@@ -575,7 +584,7 @@ class StageRuntime:
         # Similarly, only set inputs for tensors that are not outputs of other
         # modules in this stage.
         for (module, input_names, output_names) in \
-            zip(reversed(modules), reversed(all_input_names), reversed(all_output_names)):
+                zip(reversed(modules), reversed(all_input_names), reversed(all_output_names)):
             for output_name in output_names:
                 if output_name not in all_input_names_set:
                     if output_name not in self.gradients:
@@ -592,6 +601,7 @@ class StageRuntime:
         def hook_wrapper(input_name):
             def hook(input_gradient):
                 input_gradients[input_name] = input_gradient
+
             return hook
 
         for input_name in inputs:
@@ -616,10 +626,18 @@ class StageRuntime:
             if input_name != "input0" and input_name != "input1" and input_name != "input2" and input_name != "input":
                 self.gradients[input_name] = input_gradients[input_name]
 
+        ts2 = time.time()
+
         # Send output gradients.
         self.send_tensors_backward()
+        ts3 = time.time()
+
         if self.verbose_freq > 0 and self.backward_minibatch_id % self.verbose_freq == 0:
             self.backward_stats.print_stats()
+            print(f"### bwd_rcvd r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts1}")
+            print(f"### bwd_comp r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts2 - ts1}")
+            print(f"### bwd_snd_q r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts3}")
+
         self.backward_stats.reset_stats()
         self.backward_minibatch_id += 1
 
@@ -632,7 +650,7 @@ class StageRuntime:
             return
 
         # Receive ack from next stage. Send ack to previous stage.
-        if self.stage < (self.num_stages-1):
+        if self.stage < (self.num_stages - 1):
             self.comm_handler.recv(
                 "ack",
                 forward_minibatch_id=self.forward_minibatch_id,
