@@ -11,17 +11,20 @@ class RuntimeStats:
             'receive_tensors_size': 0,
         }
         self.forward = forward
+        self.units = []
+        for i in self.stats:
+            self.units.append('s')
+            if i == 'receive_tensors_size' or i == 'send_tensors_size':
+                self.units.append('b')
 
     def print_stats(self):
         if self.forward:
-            print("Forward Stats:")
+            s = "Forward Stats:"
         else:
-            print("Backward Stats:")
-        for i in sorted(self.stats):
-            units = 'seconds'
-            if i == 'receive_tensors_size' or i == 'send_tensors_size':
-                units = 'bytes'
-            print("\t %s %.3f %s" % (i, self.stats[i], units))
+            s = "Backward Stats:"
+        for i, (k, v) in enumerate(self.stats.items()):
+            s += "\t %s %.3f %s" % (k, v, self.units[i])
+        print(s)
 
     def reset_stats(self):
         for i in self.stats.keys():
