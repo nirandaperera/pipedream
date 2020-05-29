@@ -17,11 +17,11 @@ rm "$LOGS_DIR"/*
 
 command() {
         echo "### batch size $1 rank $2 start"
-        python main_with_runtime.py --module "$MODULE" -b "$1" --data_dir $DATA --rank "$2" --local_rank "$2" --master_addr localhost --config_path "$CONFIG" --distributed_backend gloo --epochs 2 -v 1
+        python main_with_runtime.py --module "$MODULE" -b "$1" --data_dir $DATA --rank "$2" --local_rank "$2" --master_addr localhost --config_path "$CONFIG" --distributed_backend gloo --epochs 4 -v 1
         echo "### batch size $1 rank $2 end"
 }
 
-for b in 16 32 64 128 256 512 1024
+for b in 64 128 256 512
 do
         echo "batch $b start"
         for r in 0 1 2 3
