@@ -432,10 +432,9 @@ def train(train_loader, r, optimizer, epoch):
     ts1 = time.time()
     r.wait()
     ts2 = time.time()
-    print(f"### wait r:{args.rank} e:{epoch} ts1:{ts1:.3f} ts2:{ts2:.3f}")
 
-    print("Epoch %r %d: %.3f seconds  start time: %.3f, epoch end time: %.3f" % (
-        args.rank, epoch, time.time() - epoch_start_time, epoch_start_time, time.time()))
+    print("Epoch %r %d: %.3f s  start:%.3f, end: %.3f %.3f %.3f" % (
+        args.rank, epoch, time.time() - epoch_start_time, epoch_start_time, time.time(), ts1, ts2))
 
 
 def validate(val_loader, r, epoch):
