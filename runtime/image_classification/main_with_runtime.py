@@ -417,7 +417,7 @@ def train(train_loader, r, optimizer, epoch):
         print(f"### opt_step r:{args.rank} e:{epoch} b:{i}/{n} ts1:{ts1:.3f} ts2:{ts2:.3f}")
 
     # finish remaining backward passes
-    for i in range(num_warmup_minibatches):
+    for i in range(i, num_warmup_minibatches):
         optimizer.zero_grad()
         optimizer.load_old_params()
         r.run_backward(epoch, n)
@@ -429,10 +429,13 @@ def train(train_loader, r, optimizer, epoch):
         print(f"### opt_step r:{args.rank} e:{epoch} b:{i}/{n} ts1:{ts1:.3f} ts2:{ts2:.3f}")
 
     # wait for all helper threads to complete
+    ts1 = time.time()
     r.wait()
+    ts2 = time.time()
+    print(f"### wait r:{args.rank} e:{epoch} ts1:{ts1:.3f} ts2:{ts2:.3f}")
 
-    print("Epoch %d: %.3f seconds" % (epoch, time.time() - epoch_start_time))
-    print("Epoch start time: %.3f, epoch end time: %.3f" % (epoch_start_time, time.time()))
+    print("Epoch %r %d: %.3f seconds  start time: %.3f, epoch end time: %.3f" % (
+        args.rank, epoch, time.time() - epoch_start_time, epoch_start_time, time.time()))
 
 
 def validate(val_loader, r, epoch):
