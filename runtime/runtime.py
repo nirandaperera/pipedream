@@ -489,21 +489,23 @@ class StageRuntime:
         """Run forward pass.
         """
         # Receive tensors from previous worker.
+        ts1 = time.time()
         self.receive_tensors_forward()
         tensors = self.tensors[-1]
-        ts1 = time.time()
+        ts2 = time.time()
 
         # Run forward pass.
         self._run_forward(tensors)
-        ts2 = time.time()
+        ts3 = time.time()
 
         # Send tensors forward.
         self.send_tensors_forward()
-        # ts3 = time.time()
+        ts4 = time.time()
 
         if self.verbose_freq > 0 and self.forward_minibatch_id % self.verbose_freq == 0:
             self.forward_stats.print_stats()
-            print(f"### fwd_rcvd r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts:{ts1:.3f} ts:{ts2:.3f}")
+            print(
+                f"### fwd_rcvd {self.rank} {epoch} {self.forward_minibatch_id} {ts1:.3f} {ts2:.3f} {ts3:.3f} {ts4:.3f}")
             # print(f"### fwd_comp r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts2 - ts1:.3f}")
             # print(f"### fwd_snd_q r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts2:.3f}")
 
@@ -555,8 +557,9 @@ class StageRuntime:
 
     def run_backward(self, epoch, num_batches):
         # Receive input gradients needed for backward pass.
-        self.receive_tensors_backward()
         ts1 = time.time()
+        self.receive_tensors_backward()
+        ts2 = time.time()
         # Backward pass through modules in reverse order.
         inputs = {}
         outputs = {}
@@ -626,15 +629,16 @@ class StageRuntime:
             if input_name != "input0" and input_name != "input1" and input_name != "input2" and input_name != "input":
                 self.gradients[input_name] = input_gradients[input_name]
 
-        ts2 = time.time()
+        ts3 = time.time()
 
         # Send output gradients.
         self.send_tensors_backward()
-        # ts3 = time.time()
+        ts4 = time.time()
 
         if self.verbose_freq > 0 and self.backward_minibatch_id % self.verbose_freq == 0:
             self.backward_stats.print_stats()
-            print(f"### bwd_rcvd r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts:{ts1:.3f} ts:{ts2:.3f}")
+            print(
+                f"### bwd_rcvd {self.rank} {epoch} {self.backward_minibatch_id} {ts1:.3f} {ts2:.3f} {ts3:.3f} {ts4:.3f}")
             # print(f"### bwd_comp r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts2 - ts1:.3f}")
             # print(f"### bwd_snd_q r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts2:.3f}")
 

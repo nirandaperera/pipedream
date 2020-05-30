@@ -414,7 +414,7 @@ def train(train_loader, r, optimizer, epoch):
         ts1 = time.time()
         optimizer.step()
         ts2 = time.time()
-        print(f"### opt_step r:{args.rank} e:{epoch} b:{i}/{n} ts1:{ts1:.3f} ts2:{ts2:.3f}")
+        print(f"### opt_step {args.rank} {epoch} {i} {ts1:.3f} {ts2:.3f}")
 
     # finish remaining backward passes
     for i in range(i, num_warmup_minibatches):
@@ -426,7 +426,7 @@ def train(train_loader, r, optimizer, epoch):
         ts1 = time.time()
         optimizer.step()
         ts2 = time.time()
-        print(f"### opt_step r:{args.rank} e:{epoch} b:{i}/{n} ts1:{ts1:.3f} ts2:{ts2:.3f}")
+        print(f"### opt_step {args.rank} {epoch} {i} {ts1:.3f} {ts2:.3f}")
 
     # wait for all helper threads to complete
     ts1 = time.time()
