@@ -417,7 +417,7 @@ def train(train_loader, r, optimizer, epoch):
         print(f"### opt_step {args.rank} {epoch} {i} {ts1:.3f} {ts2:.3f}")
 
     # finish remaining backward passes
-    for i in range(i, num_warmup_minibatches):
+    for i in range(n - num_warmup_minibatches, n):
         optimizer.zero_grad()
         optimizer.load_old_params()
         r.run_backward(epoch, n)
