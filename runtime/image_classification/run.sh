@@ -17,7 +17,7 @@ rm "$LOGS_DIR"/*
 
 command() {
         echo "### batch size $1 rank $2 start"
-        python main_with_runtime.py --module "$MODULE" -b "$1" --data_dir $DATA --rank "$2" --local_rank "$2" --master_addr localhost --config_path "$CONFIG" --distributed_backend gloo --epochs 3 -v 1
+        python main_with_runtime.py --module "$MODULE" -b "$1" --data_dir $DATA --rank "$2" --local_rank "$2" --master_addr localhost --config_path "$CONFIG" --distributed_backend gloo --epochs 3 -v 1 -j 10
         echo "### batch size $1 rank $2 end"
 }
 
