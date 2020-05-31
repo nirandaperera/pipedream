@@ -378,7 +378,9 @@ class StageRuntime:
             self.tensors.pop(0)
         self.tensors.append({})
         if self.loader_iter is not None:
+            print(f"### rcvt0 {time.time()}")
             input = next(self.loader_iter)
+            print(f"### rcvt1 {time.time()}")
             if self.model_type == TRANSLATION:
                 (input, target) = input
                 src, src_length = input
@@ -406,6 +408,7 @@ class StageRuntime:
                 self.tensors[-1]["target"] = target.cuda(non_blocking=True)
                 self.tensors[-1]["target_length"] = target_sizes.cuda(
                     non_blocking=True)
+            print(f"### rcv2 {time.time()}")
         else:
             # Receive all required tensors from upstream machines.
             for input_name in self.receive_ranks:
