@@ -1,13 +1,22 @@
 #!/bin/bash
 export CUDA_VISIBLE_DEVICES=4,5,6,7
 
-MODEL="resnet50"
+MODEL="$1"
+#MODEL="resnet50"
 #MODEL="alexnet"
 
-CONF="4_straight"
+CONF="$2"
+#CONF="4_straight"
+
+JSON="$3"
+#JSON="mp_conf"
+
+RANKS="$4"
 
 MODULE="models.$MODEL.gpus=$CONF"
-CONFIG="models/$MODEL/gpus=$CONF/mp_conf.json"
+CONFIG="models/$MODEL/gpus=$CONF/$JSON.json"
+
+echo "module $MODULE config $CONFIG ranks $RANKS"
 
 DATA="/N/u2/d/dnperera/data/imagenet-mini/"
 # DATA="/N/u2/d/dnperera/data/ILSVRC/Data/CLS-LOC/"
@@ -25,7 +34,7 @@ command() {
 
 for b in 64 128 256 512; do
   echo "batch $b start"
-  for r in 0 1 2 3; do
+  for ((r = 0; r < RANKS; r++)); do
     command $b $r &>"$LOGS_DIR"/"$b"_"$r".log &
   done
   wait
@@ -34,4 +43,4 @@ for b in 64 128 256 512; do
 done
 
 echo "zipping $LOGS_DIR"
-cd $LOGS_DIR && tar czf ../../logs_"$MODULE".tar *.log && cd -
+cd "$LOGS_DIR" && tar czf ../../logs_"$MODULE".tar ./*.log && cd - || return
