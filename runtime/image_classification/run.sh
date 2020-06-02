@@ -21,7 +21,7 @@ echo "module $MODULE config $CONFIG ranks $RANKS"
 DATA="/N/u2/d/dnperera/data/imagenet-mini/"
 # DATA="/N/u2/d/dnperera/data/ILSVRC/Data/CLS-LOC/"
 
-LOGS_DIR="logs/${MODULE}_${CONF}"
+LOGS_DIR="logs/${MODULE}_${JSON}"
 echo "making dir $LOGS_DIR"
 mkdir -p "$LOGS_DIR"
 rm -f "$LOGS_DIR"/*
@@ -43,4 +43,4 @@ for b in 64 128 256 512; do
 done
 
 echo "zipping $LOGS_DIR"
-cd "$LOGS_DIR" && tar czf ../../"${MODULE}_${CONF}".tar ./*.log && cd - || return
+cd "$LOGS_DIR" && tar czf ../../"${MODULE}_${JSON}".tar ./*.log && cd - || return
