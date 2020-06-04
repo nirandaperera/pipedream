@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MODEL="resnet50"
+MODEL="vgg16"
 CONF="4_straight"
 
 echo "running pipedream start"

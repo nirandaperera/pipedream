@@ -21,18 +21,19 @@ echo "module $MODULE config $CONFIG ranks $RANKS"
 DATA="/N/u2/d/dnperera/data/imagenet-mini/"
 # DATA="/N/u2/d/dnperera/data/ILSVRC/Data/CLS-LOC/"
 
-LOGS_DIR="logs/${MODULE}_${JSON}"
+LOGS_DIR="logs/${MODEL}_${CONF}_${JSON}"
 echo "making dir $LOGS_DIR"
 mkdir -p "$LOGS_DIR"
 rm -f "$LOGS_DIR"/*
 
 command() {
   echo "### batch size $1 rank $2 start"
-  python main_with_runtime.py --module "$MODULE" -b "$1" --data_dir $DATA --rank "$2" --local_rank "$2" --master_addr localhost --config_path "$CONFIG" --distributed_backend gloo --epochs 3 -v 1 -j 10
+  python main_with_runtime.py --module "$MODULE" -b "$1" --data_dir $DATA --rank "$2" --local_rank "$2" --master_addr localhost --config_path "$CONFIG" --distributed_backend gloo --epochs 3 -v 1 -j 10 -s
   echo "### batch size $1 rank $2 end"
 }
 
-for b in 64 128 256 512; do
+#for b in 64 128 256 512; do
+for b in 16 32 64; do
   echo "batch $b start"
   for ((r = 0; r < RANKS; r++)); do
     command $b $r &>"$LOGS_DIR"/"$b"_"$r".log &
@@ -43,4 +44,4 @@ for b in 64 128 256 512; do
 done
 
 echo "zipping $LOGS_DIR"
-cd "$LOGS_DIR" && tar czf ../../"${MODULE}_${JSON}".tar ./*.log && cd - || return
+cd "$LOGS_DIR" && tar czf ../../"${MODEL}_${CONF}_${JSON}".tar ./*.log && cd - || return
