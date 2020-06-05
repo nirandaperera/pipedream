@@ -5,7 +5,7 @@ class Stage0(torch.nn.Module):
     def __init__(self):
         super(Stage0, self).__init__()
         self.layer2 = torch.nn.Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-        self.layer3 = torch.nn.ReLU(inplace=True=True)
+        self.layer3 = torch.nn.ReLU(inplace=True)
         self.layer4 = torch.nn.Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self._initialize_weights()
 

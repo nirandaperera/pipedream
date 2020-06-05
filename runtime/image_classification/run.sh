@@ -15,7 +15,7 @@ echo "module $MODULE config $CONFIG ranks $RANKS"
 DATA="/N/u2/d/dnperera/data/imagenet-mini/"
 # DATA="/N/u2/d/dnperera/data/ILSVRC/Data/CLS-LOC/"
 
-LOGS_DIR="logs/${MODEL}_${CONF}_${JSON}"
+LOGS_DIR="logs/${BATCH_SIZE}_${MODEL}_${CONF}_${JSON}"
 echo "making dir $LOGS_DIR"
 mkdir -p "$LOGS_DIR"
 rm -f "$LOGS_DIR"/*
