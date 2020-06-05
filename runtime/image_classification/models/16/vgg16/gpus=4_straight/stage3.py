@@ -17,10 +17,10 @@ class Stage3(torch.nn.Module):
         self.layer11 = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
         self.layer14 = torch.nn.Linear(in_features=25088, out_features=4096, bias=True)
         self.layer15 = torch.nn.ReLU(inplace=True)
-        self.layer16 = torch.nn.Dropout(p=0.5, inplace=True=False)
+        self.layer16 = torch.nn.Dropout(p=0.5)
         self.layer17 = torch.nn.Linear(in_features=4096, out_features=4096, bias=True)
         self.layer18 = torch.nn.ReLU(inplace=True)
-        self.layer19 = torch.nn.Dropout(p=0.5, inplace=True=False)
+        self.layer19 = torch.nn.Dropout(p=0.5)
         self.layer20 = torch.nn.Linear(in_features=4096, out_features=1000, bias=True)
         self._initialize_weights()
 
