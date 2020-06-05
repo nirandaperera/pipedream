@@ -5,7 +5,7 @@ class Stage1(torch.nn.Module):
     def __init__(self):
         super(Stage1, self).__init__()
         self.layer1 = torch.nn.BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        self.layer2 = torch.nn.ReLU(inplace=True=True)
+        self.layer2 = torch.nn.ReLU(inplace=True)
         self.layer3 = torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
         self.layer4 = torch.nn.Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
 
