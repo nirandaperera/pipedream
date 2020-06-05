@@ -12,7 +12,6 @@ class Stage2(torch.nn.Module):
         self.layer7 = torch.nn.ReLU(inplace=True)
         self.layer8 = torch.nn.Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
         self.layer9 = torch.nn.BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        self.layer10 = torch.nn.BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
 
     
 
@@ -27,5 +26,4 @@ class Stage2(torch.nn.Module):
         out7 = self.layer7(out6)
         out8 = self.layer8(out7)
         out9 = self.layer9(out2)
-        out10 = self.layer10(out8)
-        return (out10, out9)
+        return (out8, out9)
