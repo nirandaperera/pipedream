@@ -15,8 +15,8 @@ class resnet101(torch.nn.Module):
     
 
     def forward(self, input0):
-        out0 = self.stage0(input0)
-        out2 = self.stage1(out0)
-        (out3, out4) = self.stage2(out2)
-        out5 = self.stage3(out3, out4)
-        return out5
+        (out0, out1) = self.stage0(input0)
+        (out2, out3) = self.stage1(out0, out1)
+        (out4, out5) = self.stage2(out2, out3)
+        out6 = self.stage3(out4, out5)
+        return out6
