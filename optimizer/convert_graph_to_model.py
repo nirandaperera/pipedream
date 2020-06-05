@@ -314,7 +314,7 @@ def convert_subgraph_to_module(graph, full_graph, num_subgraphs, module_name, in
     # Ensure that outputs of a module are returned in the same order as
     # the original model implementation.
     # TODO: This might not work as intended for sub-graphs.
-    full_graph.populate_depths()
+    #full_graph.populate_depths()
     graph_output_names, _ = get_output_names(graph, full_graph, 0)
     for key in graph_output_names:
         graph_output_names[key] = output_names[key]
