@@ -9,11 +9,11 @@ def arch():
 
 def model(criterion):
     return [
-        (Stage0(), ["input0"], ["out0", "out1"]),
-        (Stage1(), ["out0", "out1"], ["out2", "out3"]),
-        (Stage2(), ["out2", "out3"], ["out4", "out5"]),
-        (Stage3(), ["out4", "out5"], ["out6"]),
-        (criterion, ["out6"], ["loss"])
+        (Stage0(), ["input0"], ["out0"]),
+        (Stage1(), ["out0"], ["out1", "out2"]),
+        (Stage2(), ["out1", "out2"], ["out3", "out4"]),
+        (Stage3(), ["out3", "out4"], ["out5"]),
+        (criterion, ["out5"], ["loss"])
     ]
 
 def full_model():
