@@ -2,19 +2,13 @@
 export CUDA_VISIBLE_DEVICES=4,5,6,7
 
 MODEL="$1"
-#MODEL="resnet50"
-#MODEL="alexnet"
-
 CONF="$2"
-#CONF="4_straight"
-
 JSON="$3"
-#JSON="mp_conf"
-
 RANKS="$4"
+BATCH_SIZE="$5"
 
-MODULE="models.$MODEL.gpus=$CONF"
-CONFIG="models/$MODEL/gpus=$CONF/$JSON.json"
+MODULE="models.$BATCH_SIZE.$MODEL.gpus=$CONF"
+CONFIG="models/$BATCH_SIZE/$MODEL/gpus=$CONF/$JSON.json"
 
 echo "module $MODULE config $CONFIG ranks $RANKS"
 
@@ -28,12 +22,12 @@ rm -f "$LOGS_DIR"/*
 
 command() {
   echo "### batch size $1 rank $2 start"
-  python main_with_runtime.py --module "$MODULE" -b "$1" --data_dir $DATA --rank "$2" --local_rank "$2" --master_addr localhost --config_path "$CONFIG" --distributed_backend gloo --epochs 3 -v 1 -j 10 -s
+  python main_with_runtime.py --module "$MODULE" -b "$1" --data_dir $DATA --rank "$2" --local_rank "$2" --master_addr localhost --config_path "$CONFIG" --distributed_backend gloo --epochs 3 -v 1 -j 10
   echo "### batch size $1 rank $2 end"
 }
 
 #for b in 64 128 256 512; do
-for b in 16 32 64 128 256; do
+for b in $BATCH_SIZE; do
   echo "batch $b start"
   for ((r = 0; r < RANKS; r++)); do
     command $b $r &>"$LOGS_DIR"/"$b"_"$r".log &
