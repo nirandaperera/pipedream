@@ -33,7 +33,7 @@ command() {
 }
 
 #for b in 64 128 256 512; do
-for b in 16 32 64; do
+for b in 16 32 64 128 256; do
   echo "batch $b start"
   for ((r = 0; r < RANKS; r++)); do
     command $b $r &>"$LOGS_DIR"/"$b"_"$r".log &
