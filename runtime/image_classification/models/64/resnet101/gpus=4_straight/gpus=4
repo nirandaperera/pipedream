@@ -8,7 +8,7 @@ digraph {
 	node5 [label="MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
 [forward_compute_time=3.785,backward_compute_time=14.259,activation_size=51380224.0,parameter_size=0.0]" color=green style=filled]
 	node6 [label="Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
-[forward_compute_time=1.885,backward_compute_time=7.353,activation_size=51380224.0,parameter_size=16384.0]" color=green style=filled]
+[forward_compute_time=1.885,backward_compute_time=7.353,activation_size=51380224.0,parameter_size=16384.0]" color=grey style=filled]
 	node7 [label="BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
 [forward_compute_time=1.188,backward_compute_time=1.817,activation_size=51380224.0,parameter_size=512.0]" color=grey style=filled]
 	node8 [label="ReLU(inplace=True)
