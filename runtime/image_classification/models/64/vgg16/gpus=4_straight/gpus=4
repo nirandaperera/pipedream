@@ -16,7 +16,7 @@ digraph {
 	node9 [label="Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
 [forward_compute_time=52.021,backward_compute_time=145.583,activation_size=411041792.0,parameter_size=590336.0]" color=green style=filled]
 	node10 [label="ReLU(inplace=True)
-[forward_compute_time=5.952,backward_compute_time=7.425,activation_size=411041792.0,parameter_size=0.0]" color=grey style=filled]
+[forward_compute_time=5.952,backward_compute_time=7.425,activation_size=411041792.0,parameter_size=0.0]" color=green style=filled]
 	node11 [label="MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
 [forward_compute_time=6.237,backward_compute_time=14.165,activation_size=102760448.0,parameter_size=0.0]" color=grey style=filled]
 	node12 [label="Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
@@ -32,7 +32,7 @@ digraph {
 	node17 [label="ReLU(inplace=True)
 [forward_compute_time=2.998,backward_compute_time=3.882,activation_size=205520896.0,parameter_size=0.0]" color=grey style=filled]
 	node18 [label="MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
-[forward_compute_time=2.699,backward_compute_time=7.635,activation_size=51380224.0,parameter_size=0.0]" color=grey style=filled]
+[forward_compute_time=2.699,backward_compute_time=7.635,activation_size=51380224.0,parameter_size=0.0]" color=firebrick1 style=filled]
 	node19 [label="Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
 [forward_compute_time=19.080,backward_compute_time=42.599,activation_size=102760448.0,parameter_size=4720640.0]" color=firebrick1 style=filled]
 	node20 [label="ReLU(inplace=True)

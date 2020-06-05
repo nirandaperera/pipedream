@@ -6,7 +6,7 @@ node6 -- MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=Fal
 node7 -- Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)) -- forward_compute_time=37.589, backward_compute_time=87.315, activation_size=411041792.0, parameter_size=295424.000 -- stage_id=1
 node8 -- ReLU(inplace=True) -- forward_compute_time=6.557, backward_compute_time=7.574, activation_size=411041792.0, parameter_size=0.000 -- stage_id=1
 node9 -- Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)) -- forward_compute_time=52.021, backward_compute_time=145.583, activation_size=411041792.0, parameter_size=590336.000 -- stage_id=1
-node10 -- ReLU(inplace=True) -- forward_compute_time=5.952, backward_compute_time=7.425, activation_size=411041792.0, parameter_size=0.000 -- stage_id=2
+node10 -- ReLU(inplace=True) -- forward_compute_time=5.952, backward_compute_time=7.425, activation_size=411041792.0, parameter_size=0.000 -- stage_id=1
 node11 -- MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False) -- forward_compute_time=6.237, backward_compute_time=14.165, activation_size=102760448.0, parameter_size=0.000 -- stage_id=2
 node12 -- Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)) -- forward_compute_time=25.814, backward_compute_time=64.631, activation_size=205520896.0, parameter_size=1180672.000 -- stage_id=2
 node13 -- ReLU(inplace=True) -- forward_compute_time=3.184, backward_compute_time=3.735, activation_size=205520896.0, parameter_size=0.000 -- stage_id=2
@@ -14,7 +14,7 @@ node14 -- Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)) --
 node15 -- ReLU(inplace=True) -- forward_compute_time=2.757, backward_compute_time=3.817, activation_size=205520896.0, parameter_size=0.000 -- stage_id=2
 node16 -- Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)) -- forward_compute_time=36.954, backward_compute_time=94.136, activation_size=205520896.0, parameter_size=2360320.000 -- stage_id=2
 node17 -- ReLU(inplace=True) -- forward_compute_time=2.998, backward_compute_time=3.882, activation_size=205520896.0, parameter_size=0.000 -- stage_id=2
-node18 -- MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False) -- forward_compute_time=2.699, backward_compute_time=7.635, activation_size=51380224.0, parameter_size=0.000 -- stage_id=2
+node18 -- MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False) -- forward_compute_time=2.699, backward_compute_time=7.635, activation_size=51380224.0, parameter_size=0.000 -- stage_id=3
 node19 -- Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)) -- forward_compute_time=19.080, backward_compute_time=42.599, activation_size=102760448.0, parameter_size=4720640.000 -- stage_id=3
 node20 -- ReLU(inplace=True) -- forward_compute_time=1.389, backward_compute_time=2.013, activation_size=102760448.0, parameter_size=0.000 -- stage_id=3
 node21 -- Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)) -- forward_compute_time=31.508, backward_compute_time=55.320, activation_size=102760448.0, parameter_size=9439232.000 -- stage_id=3
