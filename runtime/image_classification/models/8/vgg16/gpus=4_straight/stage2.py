@@ -5,12 +5,12 @@ class Stage2(torch.nn.Module):
     def __init__(self):
         super(Stage2, self).__init__()
         self.layer1 = torch.nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-        self.layer2 = torch.nn.ReLU(inplace=True=True)
+        self.layer2 = torch.nn.ReLU(inplace=True)
         self.layer3 = torch.nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-        self.layer4 = torch.nn.ReLU(inplace=True=True)
+        self.layer4 = torch.nn.ReLU(inplace=True)
         self.layer5 = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
         self.layer6 = torch.nn.Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-        self.layer7 = torch.nn.ReLU(inplace=True=True)
+        self.layer7 = torch.nn.ReLU(inplace=True)
         self.layer8 = torch.nn.Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self._initialize_weights()
 
