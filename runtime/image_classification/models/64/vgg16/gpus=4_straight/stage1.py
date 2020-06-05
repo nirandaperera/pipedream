@@ -9,7 +9,6 @@ class Stage1(torch.nn.Module):
         self.layer3 = torch.nn.Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.layer4 = torch.nn.ReLU(inplace=True)
         self.layer5 = torch.nn.Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-        self.layer6 = torch.nn.ReLU(inplace=True)
         self._initialize_weights()
 
     def _initialize_weights(self):
@@ -32,5 +31,4 @@ class Stage1(torch.nn.Module):
         out3 = self.layer3(out2)
         out4 = self.layer4(out3)
         out5 = self.layer5(out4)
-        out6 = self.layer6(out5)
-        return out6
+        return out5
