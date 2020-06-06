@@ -14,6 +14,8 @@ parser.add_argument('-j', dest='jsons', type=str, nargs='+',
 args = parser.parse_args()
 args = vars(args)
 
+print("\n ----------------- \n Arguments\n", args)
+
 for m in args["models"]:
     for c in args["configs"]:
         for j in args["jsons"]:
