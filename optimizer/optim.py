@@ -24,23 +24,23 @@ print("\n ----------------- \n Arguments\n", args)
 
 for m in args["models"]:
     for b in args["batches"]:
-        run_args = f" -a {m}  -b {b} --data_dir {args['data']} --profile_directory {args['output']}/{b}"
-        print(f"Running {run_args}")
-        os.system(f"CUDA_VISIBLE_DEVICES=4 python main.py {run_args}")
+        if args['straight']:
+            config = f"{args['workers']}_straight"
+            straight = '--straight_pipeline'
+        else:
+            config = f"{args['workers']}"
+            straight = ''
 
-for m in args["models"]:
-    for c in args["configs"]:
-        for b in args["batches"]:
-            out_dir = f"{args['out']}/{b}/{m}/gpus={c}/"
-            os.system(f"rm -rf {out_dir}/*")
+        out_dir = f"{args['out']}/{b}/{m}/gpus={config}/"
+        os.system(f"rm -rf {out_dir}/*")
 
-            profile = f"{args['prof']}/{b}/{m}/graph.txt"
+        profile = f"{args['prof']}/{b}/{m}/graph.txt"
 
-            straight = '--straight_pipeline' if args['straight'] else ''
+        run_args = f" -f {profile} -n {args['workers']} -s {args['size']} -b {args['bw']} " \
+                   f"-o {out_dir} --use_memory_constraint {straight}"
+        print(f"Running optimizer_graph_hierarchical {run_args}")
+        os.system(f"python optimizer_graph_hierarchical.py {run_args}")
 
-            run_args = f" -f {profile} -n {args['workers']} -s {args['size']} -b {args['bw']} " \
-                       f"-o {out_dir} --use_memory_constraint {straight}"
-            print(f"Running {run_args}")
-            os.system(f"python optimizer_graph_hierarchical.py {run_args}")
-
-            run_args = f"-f {profile} -n {m} -a {m} -o {out_dir}"
+        run_args = f"-f {profile} -n {m} -a {m} -o {out_dir}"
+        print(f"Running convert_graph_to_model {run_args}")
+        os.system(f"python convert_graph_to_model.py {run_args}")
