@@ -6,8 +6,8 @@ parser.add_argument('-m', dest='models', type=str, nargs='+',
                     help='models', required=True)
 parser.add_argument('-b', dest='batches', type=int, nargs='+',
                     help='num batches', required=True)
-parser.add_argument('-d', dest='data', type=str, default='/N/u2/d/dnperera/data/imagenet-mini/')
-parser.add_argument('-o', dest='output', type=str, default='./profiles')
+parser.add_argument('-d', dest='data', help='data dir', type=str, default='/N/u2/d/dnperera/data/imagenet-mini/')
+parser.add_argument('-p', dest='profile output', help='profile ouptut dir', type=str, default='./profiles')
 
 args = parser.parse_args()
 args = vars(args)
