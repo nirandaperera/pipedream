@@ -41,6 +41,6 @@ for m in args["models"]:
         print(f"Running optimizer_graph_hierarchical {run_args}")
         os.system(f"python optimizer_graph_hierarchical.py {run_args}")
 
-        run_args = f"-f {profile} -n {m} -a {m} -o {out_dir}"
+        run_args = f"-f {out_dir}/gpus={args['workers']}.txt -n {m} -a {m} -o {out_dir}"
         print(f"Running convert_graph_to_model {run_args}")
         os.system(f"python convert_graph_to_model.py {run_args}")
