@@ -378,9 +378,9 @@ class StageRuntime:
             self.tensors.pop(0)
         self.tensors.append({})
         if self.loader_iter is not None:
-            print(f"### rcvt0 {time.time()}")
+            # print(f"### rcvt0 {time.time()}")
             input = next(self.loader_iter)
-            print(f"### rcvt1 {time.time()}")
+            # print(f"### rcvt1 {time.time()}")
             if self.model_type == TRANSLATION:
                 (input, target) = input
                 src, src_length = input
@@ -408,7 +408,7 @@ class StageRuntime:
                 self.tensors[-1]["target"] = target.cuda(non_blocking=True)
                 self.tensors[-1]["target_length"] = target_sizes.cuda(
                     non_blocking=True)
-            print(f"### rcv2 {time.time()}")
+            # print(f"### rcv2 {time.time()}")
         else:
             # Receive all required tensors from upstream machines.
             for input_name in self.receive_ranks:
@@ -488,7 +488,7 @@ class StageRuntime:
             self.comm_handler.increment_messaging_index(
                 sending=True)
 
-    def run_forward(self, epoch, num_batches, recompute_step=False):
+    def run_forward(self, recompute_step=False):
         """Run forward pass.
         """
         # Receive tensors from previous worker.
@@ -507,13 +507,14 @@ class StageRuntime:
 
         if self.verbose_freq > 0 and self.forward_minibatch_id % self.verbose_freq == 0:
             self.forward_stats.print_stats()
-            print(
-                f"### fwd_rcvd {self.rank} {epoch} {self.forward_minibatch_id} {ts1:.3f} {ts2:.3f} {ts3:.3f} {ts4:.3f}")
+            # print(f"### fwd_rcvd {self.rank} {epoch} {self.forward_minibatch_id} {ts1:.3f} {ts2:.3f} {ts3:.3f} {ts4:.3f}")
             # print(f"### fwd_comp r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts2 - ts1:.3f}")
             # print(f"### fwd_snd_q r:{self.rank} e:{epoch} b:{self.forward_minibatch_id}/{num_batches} ts: {ts2:.3f}")
 
         self.forward_stats.reset_stats()
         self.forward_minibatch_id += 1
+
+        return ts1, ts2, ts3, ts4
 
     def _run_forward(self, tensors):
         # Perform forward pass through model (self.modules_with_dependencies already
@@ -558,7 +559,7 @@ class StageRuntime:
         else:
             self.loss = 1
 
-    def run_backward(self, epoch, num_batches):
+    def run_backward(self):
         # Receive input gradients needed for backward pass.
         ts1 = time.time()
         self.receive_tensors_backward()
@@ -640,13 +641,15 @@ class StageRuntime:
 
         if self.verbose_freq > 0 and self.backward_minibatch_id % self.verbose_freq == 0:
             self.backward_stats.print_stats()
-            print(
-                f"### bwd_rcvd {self.rank} {epoch} {self.backward_minibatch_id} {ts1:.3f} {ts2:.3f} {ts3:.3f} {ts4:.3f}")
+            # print(
+            #     f"### bwd_rcvd {self.rank} {epoch} {self.backward_minibatch_id} {ts1:.3f} {ts2:.3f} {ts3:.3f} {ts4:.3f}")
             # print(f"### bwd_comp r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts2 - ts1:.3f}")
             # print(f"### bwd_snd_q r:{self.rank} e:{epoch} b:{self.backward_minibatch_id}/{num_batches} ts: {ts2:.3f}")
 
         self.backward_stats.reset_stats()
         self.backward_minibatch_id += 1
+
+        return ts1, ts2, ts3, ts4
 
     def num_tokens(self):
         return self.tensors[-1]["target_length"][0].item()

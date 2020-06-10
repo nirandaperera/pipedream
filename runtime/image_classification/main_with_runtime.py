@@ -26,6 +26,8 @@ sys.path.append("..")
 import runtime
 import sgd
 
+import numpy as np
+
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('--data_dir', type=str,
                     help='path to dataset')
@@ -122,6 +124,8 @@ class SyntheticDataset(torch.utils.data.dataset.Dataset):
 def main():
     global args, best_prec1
     args = parser.parse_args()
+
+    batch_timings = []
 
     torch.cuda.set_device(args.local_rank)
 
@@ -307,7 +311,7 @@ def main():
         if args.forward_only:
             validate(val_loader, r, epoch)
         else:
-            train(train_loader, r, optimizer, epoch)
+            batch_timings.append(train(train_loader, r, optimizer, epoch))
 
             # # evaluate on validation set
             # prec1 = validate(val_loader, r, epoch)
@@ -326,6 +330,8 @@ def main():
             #         'optimizer' : optimizer.state_dict(),
             #     }, args.checkpoint_dir, r.stage)
 
+    assert len(batch_timings) == args.epochs
+    np.save(f"{args.batch_size}_{args.rank}.pickle", np.array(batch_timings))
 
 def train(train_loader, r, optimizer, epoch):
     batch_time = AverageMeter()
@@ -340,6 +346,8 @@ def train(train_loader, r, optimizer, epoch):
     r.train(n)
     if not is_first_stage(): train_loader = None
     r.set_loader(train_loader)
+
+    batch_stats = np.zeros((n, 10))
 
     end = time.time()
     epoch_start_time = time.time()
@@ -356,11 +364,11 @@ def train(train_loader, r, optimizer, epoch):
 
     # start num_warmup_minibatches forward passes
     for i in range(num_warmup_minibatches):
-        r.run_forward(epoch, n)
+        batch_stats[i, :4] = r.run_forward()
 
     for i in range(n - num_warmup_minibatches):
         # perform forward pass
-        r.run_forward(epoch, n)
+        batch_stats[i, :4] = r.run_forward()
 
         # Adjust learning rate
         adjust_learning_rate(optimizer, epoch, args.epochs, r, args.lr_policy, i, n)
@@ -408,25 +416,26 @@ def train(train_loader, r, optimizer, epoch):
         else:
             optimizer.zero_grad()
         optimizer.load_old_params()
-        r.run_backward(epoch, n)
+        batch_stats[i, 4:8] = r.run_backward()
         optimizer.load_new_params()
 
         ts1 = time.time()
         optimizer.step()
-        ts2 = time.time()
-        print(f"### opt_step {args.rank} {epoch} {i} {ts1:.3f} {ts2:.3f}")
+        batch_stats[i, 8:] = (ts1, time.time())
+        # print(f"### opt_step {args.rank} {epoch} {i} {ts1:.3f} {ts2:.3f}")
 
     # finish remaining backward passes
     for i in range(n - num_warmup_minibatches, n):
         optimizer.zero_grad()
         optimizer.load_old_params()
-        r.run_backward(epoch, n)
+        batch_stats[i, 4:8] = r.run_backward()
         optimizer.load_new_params()
 
         ts1 = time.time()
         optimizer.step()
-        ts2 = time.time()
-        print(f"### opt_step {args.rank} {epoch} {i} {ts1:.3f} {ts2:.3f}")
+        batch_stats[i, 8:] = (ts1, time.time())
+
+        # print(f"### opt_step {args.rank} {epoch} {i} {ts1:.3f} {ts2:.3f}")
 
     # wait for all helper threads to complete
     ts1 = time.time()
@@ -435,6 +444,8 @@ def train(train_loader, r, optimizer, epoch):
 
     print("Epoch %r %d: %.3f s  start:%.3f, end: %.3f %.3f %.3f" % (
         args.rank, epoch, time.time() - epoch_start_time, epoch_start_time, time.time(), ts1, ts2))
+
+    return batch_stats
 
 
 def validate(val_loader, r, epoch):
